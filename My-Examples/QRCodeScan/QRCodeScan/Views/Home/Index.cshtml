@@ -1,28 +1,72 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Scan QR Code";
 }
     <script src="~/js/html5-qrcode.min.js"></script>
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Scan QR Code</h1>
 </div>
 
-<div style="width: 500px" id="reader"></div>
+<button id="scan" class="d-none" onclick="startScanning()">Start Scanning</button>
 
-<div id="result">Result Place Holder</div>
-
+<div id="camera" class="qrcode"></div>
+<div id="result" class="display-1"></div>
 
 <script>
+    function startTimer() {
+        var timeout = 15000;
 
-    function onScanSuccess(decodedText, decodedResult) {
-        // Handle on success condition with the decoded text or result.
-        console.log(`Scan result: ${decodedText}`, decodedResult);
-        document.getElementById("result").innerHTML = decodedText;
+        setTimeout(function () {
+            if (!$("#camera").hasClass('d-none')) {
+                // Stop scanning after successful scan
+                html5QrCode.stop().then(ignore => {
+                    $("#camera").addClass('d-none');
+                    console.log("QR code scanning stopped.");
+                }).catch(err => console.error(err));
+
+                $("#result").html("");
+                $("#result").html("Time Out / Scan failed. Please try again");
+
+                $("#scan").removeClass('d-none');
+            }
+        }, timeout);  // Set the time out to 15 seconds
     }
 
-    var html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
+    window.onload = function () {
+        startTimer();
+        scanQRCode();
+    };
+
+    function startScanning() {
+        $("#result").html("");
+        startTimer();
+        scanQRCode();
+    }
+
+    // Initialize the QR code scanner
+    const html5QrCode = new Html5Qrcode("camera");
+
+    function scanQRCode() {
+        $("#camera").removeClass('d-none');
+
+        // Function to handle the scanned QR code result
+        function onScanSuccess(qrCodeMessage) {
+            $("#result").html(qrCodeMessage);
+
+            // Stop scanning after successful scan
+            html5QrCode.stop().then(ignore => {
+                $("#camera").addClass('d-none');
+                $("#scan").removeClass('d-none');
+                console.log("QR code scanning stopped.");
+            }).catch(err => console.error(err));
+        }
+
+        // Start scanning
+        html5QrCode.start(
+            { facingMode: "environment" }, // Use the rear camera
+            { fps: 10, qrbox: 250 }, // Optional configuration options
+            onScanSuccess
+        ).catch(err => console.error(err));
+    }
 
 </script>

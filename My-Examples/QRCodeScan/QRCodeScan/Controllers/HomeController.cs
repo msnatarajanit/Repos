@@ -133,11 +133,6 @@ namespace QRCodeScan.Controllers
             return pixelData;
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
